@@ -123,6 +123,83 @@ WHERE wd.DepositStartDate >= '1985-01-01'
 GROUP BY wd.DepositGroup, wd.IsDepositExpired
 ORDER BY wd.DepositGroup DESC, wd.IsDepositExpired
 GO
+/*
+Mr. Bodrog definitely likes his werewolves more than you. This is your last chance to survive! Give him some data to play his favorite game Rich Wizard, Poor Wizard. The rules are simple: 
+You compare the deposits of every wizard with the wizard after him. If a wizard is the last one in the database, simply ignore it. In the end you have to sum the difference between the deposits
+*/
+SELECT wd.FirstName AS 'Host Wizard'
+, wd.DepositAmount AS 'Host Wizard Deposit'
+, LEAD (wd.DepositAmount) OVER (ORDER BY wd.DepositAmount)  AS 'Guest Wizard'
+
+FROM WizzardDeposits AS wd
+/*
+Part II – Queries for SoftUni Database
+
+13. Departments Total Salaries
+Create a query that shows the total sum of salaries for each department. Order them by DepartmentID.
+*/
+SELECT e.DepartmentID
+, SUM (e.Salary) as TotalSalary
+FROM Employees as e
+GROUP BY e.DepartmentID
+ORDER BY e.DepartmentID
+/*
+14. Employees Minimum Salaries
+Select the minimum salary from the employees for departments with ID (2, 5, 7) but only for those, hired after 01/01/2000.
+*/
+SELECT e.DepartmentID, MIN(e.Salary) as MinimumSalary
+FROM Employees as e
+WHERE e.DepartmentID = 2 or e.DepartmentID=5 or e.DepartmentID=7 and e.HireDate > 2000-01-01
+GROUP BY e.DepartmentID
+ORDER BY e.DepartmentID
+/*
+15. Employees Average Salaries
+Select all employees who earn more than 30000 into a new table. Then delete all employees who have ManagerID = 42 (in the new table). Then increase the salaries of all employees with DepartmentID = 1 by 5000. Finally, select the average salaries in each department.
+*/
+SELECT*
+INTO EmployeesNew
+FROM Employees e
+WHERE e.Salary > 30000
+
+DELETE
+FROM EmployeesNew
+WHERE ManagerID =42
+
+UPDATE EmployeesNew
+SET Salary+=5000
+WHERE DepartmentID = 1
+
+SELECT en.DepartmentID
+, AVG (en.Salary) as AverageSalary
+FROM EmployeesNew en
+GROUP BY en.DepartmentID
+ORDER BY en.DepartmentID
+/*
+16. Employees Maximum Salaries
+Find the max salary for each department. Filter those, which have max salaries NOT in the range 30000 – 70000.
+*/
+SELECT e.DepartmentID
+, MAX(e.Salary) as MaxSalary
+FROM Employees e
+GROUP BY e.DepartmentID
+HAVING MAX(e.Salary) <30000 or MAX(e.Salary) > 70000
+/*
+17. Employees Count Salaries
+Count the salaries of all employees, who don’t have a manager
+*/
+SELECT COUNT(e.Salary) as [Count]
+FROM Employees e
+WHERE e.ManagerID IS NULL
+/*
+18. *3rd Highest Salary
+Find the third highest salary in each department if there is such. 
+*/
+SELECT ThirdHighestSalary, D FROM 
+( SELECT Employees.Salary, DENSE_RANK() OVER (ORDER BY Employees.Salary DESC) RANK FROM Employees) as ThirdHighestSalary
+WHERE RANK = 3
+
+
+
 
 
 
